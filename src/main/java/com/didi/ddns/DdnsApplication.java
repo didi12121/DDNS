@@ -1,5 +1,6 @@
 package com.didi.ddns;
 
+import com.aliyun.alidns20150109.models.DescribeDomainRecordInfoResponseBody;
 import com.didi.ddns.http.Aliyun;
 import com.didi.ddns.http.IP;
 import lombok.extern.slf4j.Slf4j;
@@ -27,14 +28,19 @@ public class DdnsApplication {
   }
 
   @Scheduled(cron = "0 0/30 0/1 * * ? ")
+  @PostConstruct
   public void checkip() throws Exception {
     log.info("开始查询当前配置");
     String publicIPAddress = IP.getPublicIPAddress();
-    String nowip = aliyun.getnowip();
+    DescribeDomainRecordInfoResponseBody getInfo = aliyun.getnowip();
+    String nowip = getInfo.value;
+    String DomainName = getInfo.domainName;
     if (!nowip.equals(publicIPAddress)) {
         log.info("当前公网ip 与绑定的公网ip不同 当前公网ip为{},绑定ip为{}",publicIPAddress,nowip);
         log.info("开始更改ip");
         aliyun.changeip(publicIPAddress,rr);
+//        aliyun.updatecache(DomainName);
+        log.info("修改结束");
     }else {
       log.info("当前ip与公网ip相同--无需替换");
     }

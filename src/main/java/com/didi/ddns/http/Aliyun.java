@@ -1,17 +1,16 @@
 package com.didi.ddns.http;
 
-import com.aliyun.alidns20150109.Client;
-import com.aliyun.alidns20150109.models.DescribeDomainRecordInfoRequest;
-import com.aliyun.alidns20150109.models.DescribeDomainRecordInfoResponse;
-import com.aliyun.alidns20150109.models.UpdateDomainRecordRequest;
-import com.aliyun.alidns20150109.models.UpdateDomainRecordResponse;
+import com.aliyun.alidns20150109.models.*;
 import com.didi.ddns.config.AliyunConfig;
+import com.google.gson.JsonObject;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 
 @Component
+@Slf4j
 public class Aliyun {
 
   @Resource
@@ -19,12 +18,12 @@ public class Aliyun {
   @Value("${recordid}")
   String recordid;
 
-  public String getnowip() throws Exception {
+  public DescribeDomainRecordInfoResponseBody getnowip() throws Exception {
     DescribeDomainRecordInfoRequest describeDomainRecordInfoRequest = new DescribeDomainRecordInfoRequest()
       .setRecordId(recordid);
     DescribeDomainRecordInfoResponse describeDomainRecordInfoResponse = aliyunConfig.getclient().describeDomainRecordInfo(describeDomainRecordInfoRequest);
     String value = describeDomainRecordInfoResponse.getBody().value;
-    return value;
+    return describeDomainRecordInfoResponse.getBody();
   }
 
 
@@ -35,8 +34,14 @@ public class Aliyun {
       .setType("A")
       .setValue(ip);
     UpdateDomainRecordResponse updateDomainRecordResponse = aliyunConfig.getclient().updateDomainRecord(updateDomainRecordRequest);
+    log.info(String.valueOf(updateDomainRecordResponse.toMap()));
   }
 
+  public void updatecache(String domainName) throws Exception {
+    UpdateDnsCacheDomainRequest request = new UpdateDnsCacheDomainRequest();
+    request.setDomainName(domainName);
+    aliyunConfig.getclient().updateDnsCacheDomain(request);
+  }
 
 
 }
